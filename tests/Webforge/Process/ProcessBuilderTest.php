@@ -40,25 +40,37 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
   /**
    * @dataProvider provideEchoArguments
    */
-  public function testProcessBuilderShellEscaping(Array $expectedArguments, Array $arguments, $os, $runWithPHP) {
-    if ($runWithPHP) {
-      $builder = $this->build()
-         ->setPrefix('php')
-         ->add('-f')
-         ->add($this->getPackageDir('bin/')->getFile('echo.php'))
-         ->add('--');
-     } else {
-       if (SystemUtil::isWindows() && $os === SystemUtil::WINDOWS) {
-         $bin = $this->echoBat;
-       } elseif (!SystemUtil::isWindows() && $os === SystemUtil::UNIX) {
-         $bin = $this->echoSh;
-       } else {
-         return $this->markTestSkipped('Wrong platform for this test');
-       }
-
-       $builder = $this->build()->setPrefix($bin);
+  public function testProcessBuilderShellEscapingWithAShellDirector(Array $expectedArguments, Array $arguments, $os) {
+    if (SystemUtil::isWindows() && $os === SystemUtil::WINDOWS) {
+      $bin = $this->echoBat;
+    } elseif (!SystemUtil::isWindows() && $os === SystemUtil::UNIX) {
+      $bin = $this->echoSh;
+    } else {
+      return $this->markTestSkipped('Wrong platform for this test');
     }
 
+    $builder = $this->build()->setPrefix($bin);
+
+    $process = $this->configureBuilderProcess($builder, $arguments);
+    $this->assertEchoProcess($process, $expectedArguments);
+  }
+
+  /**
+   * @dataProvider provideEchoArguments
+   */
+  public function testProcessBuilderShellEscapingWithPHP(Array $expectedArguments, Array $arguments) {
+    $builder = $this->build()
+       ->setPrefix('php')
+       ->add('-f')
+       ->add($this->getPackageDir('bin/')->getFile('echo.php'))
+       ->add('--');
+
+    $process = $this->configureBuilderProcess($builder, $arguments);
+    $this->assertEchoProcess($process, $expectedArguments);
+  }
+
+
+  protected function configureBuilderProcess($builder, $arguments) {
     $builder->setEnv('DEFINED_VAR', 'this is an defined env value');
 
     foreach ($arguments as $arg) {
@@ -68,7 +80,7 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
     $process = $builder->getProcess();
     $process->setEnhanceWindowsCompatibility(TRUE);
 
-    $this->assertEchoProcess($process, $expectedArguments);
+    return $process;
   }
 
   protected function assertEchoProcess($process, $expectedArguments) {
@@ -77,47 +89,50 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
   }
   
   public static function provideEchoArguments() {
-    $tests = array();
+    $ostests = array();
 
-    $tests[] = Array(
+    $ostests[] = Array(
       array('myargument'), array('myargument')
     );
     
-    $tests[] = Array(
+    $ostests[] = Array(
       array('my"argument'), array('my"argument')
     );
     
-    $tests[] = Array(
+    $ostests[] = Array(
       array("my'argument"), array("my'argument")
     );
 
-    // the application itself has to make sure that the actual arguments are escaped correctly when in --arg="value" format. If value has an \ at the end it needs to be escaped
-    $tests[] = Array(
-      array('--paths="something\with\trailing\\"'), array('--paths="something\with\trailing\\\\"')
-    );
-
-    $tests[] = Array(
+    $ostests[] = Array(
       array('%h%d%Y'), array('%h%d%Y')
     );
 
-    $tests[] = Array(
+    $ostests[] = Array(
       array('--format=%h%d%Y'), array('--format=%h%d%Y')
     );
 
-    $tests[] = Array(
+    $ostests[] = Array(
       array('--format="%h%d%Y"'), array('--format="%h%d%Y"')
     );
 
-    $expandedTests = array();
+    $tests = array();
     foreach (array(SystemUtil::WINDOWS, SystemUtil::UNIX) as $os) {
-      foreach(array(TRUE, FALSE) as $withPHP) {
-        foreach ($tests as $testArgs) {
-          $expandedTests[] = array_merge($testArgs, array($os, $withPHP));
-        }
+      foreach ($ostests as $testArgs) {
+        $tests[] = array_merge($testArgs, array($os));
       }
     }
 
-    return $expandedTests;
+    // the application itself has to make sure that the actual arguments are escaped correctly FOR THE CURRENT PLATFORM; when in --arg="value" format. If value has an \ at the end it needs to be escaped
+    $tests[] = Array(
+      array('--paths="something\with\trailing\\"'), array('--paths="something\with\trailing\\\\"'), SystemUtil::WINDOWS
+    );
+
+    // the application itself has to make sure that the actual arguments are escaped correctly FOR THE CURRENT PLATFORM; when in --arg="value" format. If value has an \ at the end it needs to be escaped
+    $tests[] = Array(
+      array('--paths="something\with\trailing"'), array('--paths="something\with\trailing"'), SystemUtil::UNIX
+    );
+
+    return $tests;
 
     /*
     // Bug in Symfony? How to escape & here?
