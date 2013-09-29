@@ -60,7 +60,7 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
   protected function configureBuilderProcess($builder, $arguments) {
     $builder->setEnv('DEFINED_VAR', 'this is an defined env value');
     $builder->addArguments($arguments);
-    
+
     $process = $builder->getProcess();
     $process->setEnhanceWindowsCompatibility(TRUE);
 
@@ -91,11 +91,14 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
       array('%h%d%Y'), array('%h%d%Y')
     );
 
-    /* Symfony Bug?
+    /* Symfony Bug? 
+
+    it seems like symfony is escaping those sequences wrong, because it does ^% for escaping (which does not actually work)
     $ostests[] = Array(
       array('--format=%h%d%Y'), array('--format=%h%d%Y')
     );
 
+    this is even more complicated, because its in quotes"" which get handled from cli different
     $ostests[] = Array(
       array('--format="%h%d%Y"'), array('--format="%h%d%Y"')
     );
