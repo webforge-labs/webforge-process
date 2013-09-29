@@ -59,11 +59,8 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
 
   protected function configureBuilderProcess($builder, $arguments) {
     $builder->setEnv('DEFINED_VAR', 'this is an defined env value');
-
-    foreach ($arguments as $arg) {
-      $builder->add($arg);
-    }
-
+    $builder->addArguments($arguments);
+    
     $process = $builder->getProcess();
     $process->setEnhanceWindowsCompatibility(TRUE);
 

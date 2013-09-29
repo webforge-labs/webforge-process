@@ -22,4 +22,11 @@ class ProcessBuilder extends SymfonyProcessBuilder {
     $this->setEnv('USERPROFILE', getenv('HOME'));
     
   }
+
+  public function addArguments(Array $arguments) {
+    foreach ($arguments as $arg) {
+      $this->add($arg);
+    }
+    return $this;
+  }
 }
