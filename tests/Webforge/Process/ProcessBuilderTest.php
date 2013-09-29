@@ -58,15 +58,17 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
   /**
    * @dataProvider provideEchoArguments
    */
-  public function testProcessBuilderShellEscapingWithPHP(Array $expectedArguments, Array $arguments) {
-    $builder = $this->build()
-       ->setPrefix('php')
-       ->add('-f')
-       ->add($this->getPackageDir('bin/')->getFile('echo.php'))
-       ->add('--');
+  public function testProcessBuilderShellEscapingWithPHP(Array $expectedArguments, Array $arguments, $os) {
+    if (SystemUtil::isWindows() && $os === SystemUtil::WINDOWS || !SystemUtil::isWindows() && $os === SystemUtil::UNIX) {
+      $builder = $this->build()
+         ->setPrefix('php')
+         ->add('-f')
+         ->add($this->getPackageDir('bin/')->getFile('echo.php'))
+         ->add('--');
 
-    $process = $this->configureBuilderProcess($builder, $arguments);
-    $this->assertEchoProcess($process, $expectedArguments);
+      $process = $this->configureBuilderProcess($builder, $arguments);
+      $this->assertEchoProcess($process, $expectedArguments);
+    }
   }
 
 
