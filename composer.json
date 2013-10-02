@@ -9,7 +9,7 @@
   ],
   "minimum-stability":"dev",
   "require":{
-    "symfony\/process":"2.3.*"
+    "symfony/process":"2.3.*"
   },
   "require-dev":{
     "webforge/testplate": "1.3.*",
