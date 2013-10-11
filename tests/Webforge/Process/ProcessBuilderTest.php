@@ -13,6 +13,7 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
     parent::setUp();
 
     $this->echoBat = $this->getPackageDir('bin/')->getFile('echo.bat');
+    $this->symfonyEcho = $this->getPackageDir('bin/')->getFile('echo-symfony.php');
     $this->echoSh = $this->getPackageDir('bin/')->getFile('echo.sh');
   }
 
@@ -70,6 +71,52 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
   protected function assertEchoProcess($process, $expectedArguments) {
     $this->assertEquals(0, $process->run(), "Error: Process did not run correctly. It was run:\n".$process->getCommandLine()."\nExitCode 0 was expected\nOutput is:\n".$process->getOutput()."\n".$process->getErrorOutput());
     $this->assertEquals($expectedArguments, JSONConverter::create()->parse($process->getOutput()), "Command Called was:\n".$process->getCommandLine());
+  }
+
+  /*
+  public function testSymfonyBackslashEscapingOnEndOfArgument() {
+    $process = SymfonyProcessBuilder::create(array())
+      ->add('php')
+      ->add('-f')
+      ->add('echo.php')
+      ->add('withbs\\')
+      ->getProcess();
+
+    print $process->getCommandLine();
+
+    $process->run();
+
+    $this->assertEquals(
+      'string(7) "withbs\"',
+      trim($process->getOutput())
+    );
+  }
+  */
+
+  public function testSymfonyBugOrFeature() {
+    $bs = '\\';
+
+    $process = SymfonyProcessBuilder::create(array())
+      ->setPrefix('php')
+      ->add('-f')
+      ->add((string) $this->symfonyEcho)
+      ->add('echo')
+      ->add('--location=')
+      ->add('D:\www\whitespace location'.$bs.$bs)
+      ->add('--flag')
+      ->getProcess();
+
+    $ret = $process->run();
+    $arguments = json_decode($process->getOutput());
+
+    if ($ret !== 0 || $arguments === NULL) {
+      $this->fail("Symfony echo.php call failed\n".$process->getErrorOutput());
+    }
+
+    $this->assertEquals(
+      array('D:\www\whitespace location\\', TRUE),
+      $arguments
+    );
   }
   
   public static function provideEchoArguments() {
