@@ -5,13 +5,20 @@ namespace Webforge\Process;
 use Webforge\Common\System\System as SystemInterface;
 use Symfony\Component\Process\Process As SymfonyProcess;
 use Webforge\Common\System\Util as SystemUtil;
+use Webforge\Common\System\Container as SystemContainer;
 
 class System implements SystemInterface {
 
   protected $os;
 
-  public function __construct() {
+  protected $container;
+
+  protected $executables;
+
+  public function __construct(SystemContainer $container) {
     $this->os = SystemUtil::isWindows() ? self::WINDOWS : self::UNIX;
+    $this->container = $container;
+    $this->executables = $this->container->getExecutableFinder();
   }
 
   /**
@@ -52,6 +59,21 @@ class System implements SystemInterface {
     return $process;
   }
 
+  /**
+   * @return Webforge\Process\ProcessBuilder
+   */
+  public function buildProcess() {
+    return ProcessBuilder::create(array());
+  }
+
+  /**
+   * @return Webforge\Process\ProcessBuilder
+   */
+  public function buildPHPProcess() {
+    return ProcessBuilder::create(array(
+      $this->executables->getExecutable('php')
+    ));
+  }
 
   /**
    * @inherit-doc

@@ -3,6 +3,8 @@
 namespace Webforge\Process;
 
 use Webforge\Common\System\Util as SystemUtil;
+use Mockery as m;
+use Webforge\Common\System\ExecutableFinder;
 
 /**
  * 
@@ -16,7 +18,10 @@ class SystemTest extends \Webforge\Code\Test\Base {
     $this->chainClass = 'Webforge\\Process\\System';
     parent::setUp();
 
-    $this->system = new System();
+    $this->systemContainer = m::mock('Webforge\Common\System\Container');
+    $this->systemContainer->shouldReceive('getExecutableFinder')->byDefault()->andReturn(new ExecutableFinder(array()));
+
+    $this->system = new System($this->systemContainer);
 
     if (SystemUtil::isWindows()) {
       $this->ls = 'dir';
@@ -63,5 +68,21 @@ class SystemTest extends \Webforge\Code\Test\Base {
 
   public function testProcessWillReturnASymfonyProcess() {
     $this->assertInstanceOf('Symfony\Component\Process\Process', $this->system->process($this->ls));
+  }
+
+  public function testBuildProcessReturnsAProcessBuilder() {
+    $this->assertInstanceOf('Webforge\Process\ProcessBuilder', $this->system->buildProcess());
+  }
+
+
+  public function testBuildPHPProcessReturnsAProcessBuilder_Preconfigured() {
+    $this->assertInstanceOf('Webforge\Process\ProcessBuilder', $builder = $this->system->buildPHPProcess());
+
+    $process = $builder->add('-v')->getProcess();
+
+    $this->assertContains('php', $process->getCommandLine(), 'i expect to find php as an executable in the commandline');
+
+    $this->assertSame(0, $process->run(), $process->getErrorOutput());
+    $this->assertStringStartsWith('PHP '.PHP_VERSION, $process->getOutput(), 'little more acceptance here');
   }
 }
