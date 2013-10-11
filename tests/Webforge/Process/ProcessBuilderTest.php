@@ -92,32 +92,6 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
     );
   }
   */
-
-  public function testSymfonyBugOrFeature() {
-    $bs = '\\';
-
-    $process = SymfonyProcessBuilder::create(array())
-      ->setPrefix('php')
-      ->add('-f')
-      ->add((string) $this->symfonyEcho)
-      ->add('echo')
-      ->add('--location=')
-      ->add('D:\www\whitespace location'.$bs.$bs)
-      ->add('--flag')
-      ->getProcess();
-
-    $ret = $process->run();
-    $arguments = json_decode($process->getOutput());
-
-    if ($ret !== 0 || $arguments === NULL) {
-      $this->fail("Symfony echo.php call failed\n".$process->getErrorOutput());
-    }
-
-    $this->assertEquals(
-      array('D:\www\whitespace location\\', TRUE),
-      $arguments
-    );
-  }
   
   public static function provideEchoArguments() {
     $ostests = array();
