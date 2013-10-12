@@ -79,7 +79,9 @@ class System implements SystemInterface {
    * @inherit-doc
    */
   public function passthru($commandline, $options = NULL) {
-    return passthru($commandline);
+    $retvar = NULL;
+    passthru($commandline, $retvar);
+    return $retvar;
   }
 
   /**
