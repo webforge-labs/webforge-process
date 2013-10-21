@@ -1,5 +1,5 @@
 {
-  "name":"webforge\/process",
+  "name":"webforge/process",
   "license":"MIT",
   "authors":[
     {
@@ -10,11 +10,12 @@
   "minimum-stability":"dev",
   "require":{
     "symfony/process":"2.3.*",
-    "webforge/common": "1.4.x@dev"
+    "webforge/common": "1.*@dev"
   },
   "require-dev":{
     "webforge/testplate": ">=1.3",
-    "symfony/console":"2.3.*",
+    "symfony/console":"2.3.*@stable",
+    "symfony/finder":"2.3.*@stable",
     "mockery/mockery": "0.8.*@stable"
   },
   "autoload":{
