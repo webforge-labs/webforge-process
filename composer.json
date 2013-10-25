@@ -16,7 +16,8 @@
     "webforge/testplate": ">=1.3",
     "symfony/console":"2.3.*@stable",
     "symfony/finder":"2.3.*@stable",
-    "mockery/mockery": "0.8.*@stable"
+    "mockery/mockery": "0.8.*@stable",
+    "satooshi/php-coveralls": "dev-master"
   },
   "autoload":{
     "psr-0":{
