@@ -6,6 +6,7 @@ use Webforge\Common\System\System as SystemInterface;
 use Symfony\Component\Process\Process As SymfonyProcess;
 use Webforge\Common\System\Util as SystemUtil;
 use Webforge\Common\System\Container as SystemContainer;
+use Webforge\Common\System\Dir;
 
 class System implements SystemInterface {
 
@@ -14,6 +15,8 @@ class System implements SystemInterface {
   protected $container;
 
   protected $executables;
+
+  protected $workingDirectory = NULL;
 
   public function __construct(SystemContainer $container) {
     $this->os = SystemUtil::isWindows() ? self::WINDOWS : self::UNIX;
@@ -49,7 +52,7 @@ class System implements SystemInterface {
   public function process($commandline, $options = NULL) {
     $process = new SymfonyProcess(
       $commandline,
-      $this->getCurrentWorkDirectory(), // || options['cwd']
+      $this->getWorkingDirectory(), // || options['cwd']
       $env = NULL,
       $stdin = NULL,
       $timeout = $this->getDefaultTimeout(),
@@ -63,32 +66,54 @@ class System implements SystemInterface {
    * @return Webforge\Process\ProcessBuilder
    */
   public function buildProcess() {
-    return ProcessBuilder::create(array());
+    $builder = ProcessBuilder::create(array());
+
+    if ($this->getWorkingDirectory() != NULL) {
+      $builder->setWorkingDirectory($this->getWorkingDirectory());
+    }
+
+    return $builder;
   }
 
   /**
    * @return Webforge\Process\ProcessBuilder
    */
   public function buildPHPProcess() {
-    return ProcessBuilder::create(array(
-      $this->executables->getExecutable('php')
-    ));
+    return $this->buildProcess()->setPrefix($this->which('php'));
   }
 
   /**
    * @inherit-doc
    */
   public function passthru($commandline, $options = NULL) {
+    if ($this->getWorkingDirectory() != NULL) {
+      $commandline = 'cd '.$this->getWorkingDirectory()->getQuotedString().' && '.$commandline;
+    }
+
     $retvar = NULL;
     passthru($commandline, $retvar);
     return $retvar;
   }
 
   /**
+   * Returns the file to a executable if findable
+   * 
+   * @return Webforge\Common\System\File
+   */
+  public function which($name) {
+    return $this->executables->getExecutable($name);
+  }
+
+  /**
    * @return string|NULL if NULL is returned the current is used
    */
-  public function getCurrentWorkDirectory() {
-    return NULL;
+  public function getWorkingDirectory() {
+    return $this->workingDirectory;
+  }
+
+  public function setWorkingDirectory(Dir $directory) {
+    $this->workingDirectory = $directory;
+    return $this;
   }
 
   public function getDefaultTimeout() {
