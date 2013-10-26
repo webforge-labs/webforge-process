@@ -2,3 +2,5 @@
 
 /process.sublime-workspace
 /composer.lock
+
+/build/coverage
