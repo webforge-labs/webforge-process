@@ -17,7 +17,8 @@
     "symfony/console":"2.3.*@stable",
     "symfony/finder":"2.3.*@stable",
     "mockery/mockery": "0.8.*@stable",
-    "satooshi/php-coveralls": "dev-master"
+    "satooshi/php-coveralls": "dev-master",
+    "liip/rmt": "0.9.*"
   },
   "autoload":{
     "psr-0":{
