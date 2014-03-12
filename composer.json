@@ -9,7 +9,7 @@
   ],
   "minimum-stability":"dev",
   "require":{
-    "symfony/process":"2.3.*",
+    "symfony/process":"2.4.*",
     "webforge/common": "1.*@dev"
   },
   "require-dev":{
