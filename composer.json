@@ -10,7 +10,7 @@
   "minimum-stability":"dev",
   "require":{
     "symfony/process":"2.5.*",
-    "webforge/common": "1.*@dev"
+    "webforge/common": ">=1.8"
   },
   "require-dev":{
     "webforge/testplate": ">=1.3",
