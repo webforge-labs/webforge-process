@@ -73,25 +73,25 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
     $this->assertEquals($expectedArguments, JSONConverter::create()->parse($process->getOutput()), "Command Called was:\n".$process->getCommandLine());
   }
 
-  /*
-  public function testSymfonyBackslashEscapingOnEndOfArgument() {
+ /* public function testSymfonyBackslashEscapingOnEndOfArgument() {
     $process = SymfonyProcessBuilder::create(array())
       ->add('php')
       ->add('-f')
-      ->add('echo.php')
-      ->add('withbs\\')
+      ->add('bin\echo-symfony.php')
+      ->add('echo')
+      ->add('argu"ment')
+      ->setOption('suppress_errors', false)
       ->getProcess();
 
-    print $process->getCommandLine();
+    //print $process->getCommandLine();
 
     $process->run();
 
     $this->assertEquals(
       'string(7) "withbs\"',
-      trim($process->getOutput())
+      trim($process->getErrorOutput())
     );
-  }
-  */
+  }*/
   
   public static function provideEchoArguments() {
     $ostests = array();
@@ -112,18 +112,15 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
       array('%h%d%Y'), array('%h%d%Y')
     );
 
-    /* Symfony Bug? 
-
-    it seems like symfony is escaping those sequences wrong, because it does ^% for escaping (which does not actually work)
+    /* Symfony Bug (just fixed) */
     $ostests[] = Array(
       array('--format=%h%d%Y'), array('--format=%h%d%Y')
     );
 
-    this is even more complicated, because its in quotes"" which get handled from cli different
+    //this is even more complicated, because its in quotes"" which get handled from cli different
     $ostests[] = Array(
       array('--format="%h%d%Y"'), array('--format="%h%d%Y"')
     );
-    */
 
     $tests = array();
     foreach (array(SystemUtil::WINDOWS, SystemUtil::UNIX) as $os) {
@@ -133,11 +130,12 @@ class ProcessBuilderTest extends \Webforge\Code\Test\Base {
     }
 
     // the application itself has to make sure that the actual arguments are escaped correctly FOR THE CURRENT PLATFORM; when in --arg="value" format. If value has an \ at the end it needs to be escaped
+
+    // CHANGED in 1.2.0 : it does not need to be 
     $tests[] = Array(
-      array('--paths="something\with\trailing\\"'), array('--paths="something\with\trailing\\\\"'), SystemUtil::WINDOWS
+      array('--paths="something\with\trailing\\"'), array('--paths="something\with\trailing\\"'), SystemUtil::WINDOWS
     );
 
-    // the application itself has to make sure that the actual arguments are escaped correctly FOR THE CURRENT PLATFORM; when in --arg="value" format. If value has an \ at the end it needs to be escaped
     $tests[] = Array(
       array('--paths="something\with\trailing"'), array('--paths="something\with\trailing"'), SystemUtil::UNIX
     );

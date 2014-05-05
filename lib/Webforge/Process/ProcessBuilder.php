@@ -20,7 +20,11 @@ class ProcessBuilder extends SymfonyProcessBuilder {
       $this->setEnv($inherit, getenv($inherit));
     }
     $this->setEnv('USERPROFILE', getenv('HOME'));
-    
+
+    if (defined('PHP_WINDOWS_VERSION_BUILD')) {
+      // this fixes the my"argument escaping on windows in current symfony version 2.5
+      $this->setOption('bypass_shell', false);
+    }
   }
 
   public function addArguments(Array $arguments) {
